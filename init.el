@@ -90,7 +90,7 @@ it)"
   (fset 'string-match-p (symbol-function 'my-string-match-p)))
 
 ;; Load the defaults
-(load "emacs_inherit.el")
+(load "~/drewmacs/emacs_inherit.el")
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.

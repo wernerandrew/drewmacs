@@ -2,34 +2,30 @@
 ;; .emacs file
 ;; Benjamin Gleitzman (gleitz@hunch.com)
 ;; rev: march, 2010
-;; use with (load "~/.emacs_inherit.el")
+;; use with (load "~/drewmacs/emacs_inherit.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Third-party libraries
 
-;; nxml
-(load "nxml-mode-20041004/rng-auto.el")
-(add-to-list 'auto-mode-alist '("\\.\\(xml\\|xsl\\|rng\\|xhtml\\)\\'" . nxml-mode))
-
 ;; web mode
-(load "web-mode.el")
+(load "~/drewmacs/web-mode.el")
 (add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
 ;; TODO: add mako mode to web mode
 (add-to-list 'auto-mode-alist '("\\.mako$" . web-mode))
 
 ;; SVN
 
-(load "psvn.el")
+(load "~/drewmacs/psvn.el")
 
 ;; Highline
-(load "highline.el")
+(load "~/drewmacs/highline.el")
 (require 'highline)
 (highline-mode 1)
 ;; To customize the background color
 (set-face-background 'highline-face "#222")
 
 ;; Color Theming
-(add-to-list 'load-path (expand-file-name "color-theme"))
+(add-to-list 'load-path (expand-file-name "~/drewmacs/color-theme"))
 (require 'color-theme)
 (color-theme-initialize)
 (color-theme-hober)
@@ -40,14 +36,14 @@
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 
 ;; Cython
-(load "cython-mode.el")
+(load "~/drewmacs/cython-mode.el")
 
 ;; Ruby (blech)
-(load "ruby-mode/ruby-mode.el")
+(load "~/drewmacs/ruby-mode/ruby-mode.el")
 (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
 
 ;; Fuzzy match in searches
-;;(load "anything-match-plugin.el")
+;;(load "~/drewmacs/anything-match-plugin.el")
 
 ;;; General Configurations
 
@@ -709,13 +705,13 @@ current paragraph into a single long line."
 ;; nxhtml + mako
 
 ;; MEH: needs some work.  Maybe I should start looking at web-mode again...
-;; (load "nxhtml/autostart.el")
+;; (load "~/drewmacs/nxhtml/autostart.el")
 ;; (setq mumamo-background-colors nil)
 ;; (setq debug-on-error nil) ;; disable auto debugging
 ;; (add-to-list 'auto-mode-alist '("\\.mak$" . mako-nxhtml-mumamo-mode))
 ;; (add-to-list 'auto-mode-alist '("\\.mako$" . mako-nxhtml-mumamo-mode))
 
 ;; Django Stuffs
-;; (load "django-html-mode.el")
+;; (load "~/drewmacs/django-html-mode.el")
 ;; (autoload 'django-html-mode "django-html-mode")
 ;; (add-to-list 'auto-mode-alist
