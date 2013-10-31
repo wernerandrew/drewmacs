@@ -1,21 +1,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; .emacs file
 ;; Benjamin Gleitzman (gleitz@hunch.com)
-;; rev: march, 2010
+;; with some (limited) modifications by Drew Werner (drew@datadoghq.com)
+;; rev:
 ;; use with (load "~/drewmacs/emacs_inherit.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Third-party libraries
 
-;; web mode
-(load "~/drewmacs/web-mode.el")
-(add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
-;; TODO: add mako mode to web mode
-(add-to-list 'auto-mode-alist '("\\.mako$" . web-mode))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; VISUAL
 
-;; SVN
-
-(load "~/drewmacs/psvn.el")
+;; Color Theming
+(add-to-list 'load-path (expand-file-name "~/drewmacs/color-theme"))
+(require 'color-theme)
+(color-theme-initialize)
+(color-theme-hober)
 
 ;; Highline
 (load "~/drewmacs/highline.el")
@@ -24,11 +24,17 @@
 ;; To customize the background color
 (set-face-background 'highline-face "#222")
 
-;; Color Theming
-(add-to-list 'load-path (expand-file-name "~/drewmacs/color-theme"))
-(require 'color-theme)
-(color-theme-initialize)
-(color-theme-hober)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; MAJOR MODES
+
+;; web mode
+(load "~/drewmacs/web-mode.el")
+(add-to-list 'auto-mode-alist '("\\.erb$" . web-mode))
+;; TODO: add mako mode to web mode
+(add-to-list 'auto-mode-alist '("\\.mako$" . web-mode))
+
+;; SVN
+(load "~/drewmacs/psvn.el")
 
 ;; Javascript
 (add-to-list 'load-path (expand-file-name "~/emacs"))
@@ -42,10 +48,27 @@
 (load "~/drewmacs/ruby-mode/ruby-mode.el")
 (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
 
-;; Fuzzy match in searches
-;;(load "~/drewmacs/anything-match-plugin.el")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; MISC
 
-;;; General Configurations
+;; Auto complete mode
+(add-to-list 'load-path "~/drewmacs/auto-complete")
+(require 'auto-complete-config)
+(ac-config-default)
+
+;; Python hooks
+(defvar ac-source-python
+  '((candidates .
+                (lambda ()
+                  (mapcar '(lambda (completion)
+                             (first (last (split-string completion "\\." t))))
+                          (python-symbol-completions (python-partial-symbol)))))))
+
+(add-hook 'python-mode-hook
+          (lambda () (setq ac-sources '(ac-source-python))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; GENERAL CONFIGURATION
 
 ;; No Toolbar
 (if window-system (tool-bar-mode -1))
