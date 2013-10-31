@@ -58,8 +58,8 @@
 
 This is particularly useful under Mac OSX, where GUI apps are not started from a shell."
   (interactive)
-  (let ((path-from-shell (replace-regexp-in-string 
-			  "[ \t\n]*$" "" 
+  (let ((path-from-shell (replace-regexp-in-string
+			  "[ \t\n]*$" ""
 			  (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
@@ -91,7 +91,9 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
 (if (executable-find "ag") ; Require only if executable exists
     (progn
       (load "~/drewmacs/ag.el")
-      (require 'ag)))
+      (require 'ag)
+      ;; same buffer for every search
+      (setq ag-reuse-buffers 't)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; mode CONFIGURATION
@@ -113,7 +115,8 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
 ;; (zone-when-idle zone-idle)
 
 ; Whitespace is evil
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+; Uncomment to automatically delete
+; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 ; copy and paste from X
 (setq x-select-enable-clipboard t)
