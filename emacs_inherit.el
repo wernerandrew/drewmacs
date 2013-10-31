@@ -51,11 +51,27 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; MISC
 
+;; Getting the executable path from the shell
+;; Needed to find the ag executable
+(defun set-exec-path-from-shell-PATH ()
+  "Set up Emacs' `exec-path' and PATH environment variable to match that used by the user's shell.
+
+This is particularly useful under Mac OSX, where GUI apps are not started from a shell."
+  (interactive)
+  (let ((path-from-shell (replace-regexp-in-string 
+			  "[ \t\n]*$" "" 
+			  (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
+    (setenv "PATH" path-from-shell)
+    (setq exec-path (split-string path-from-shell path-separator))))
+
+(set-exec-path-from-shell-PATH)
+
 ;; Auto complete mode
 (add-to-list 'load-path "~/drewmacs/auto-complete")
 (require 'auto-complete-config)
 (ac-config-default)
 
+;; Jedi Python Mode (Emacs 24 and up)
 (if (and (boundp 'emacs-major-version)
 	 (>= emacs-major-version 24))
     (progn
@@ -69,10 +85,16 @@
       (autoload 'jedi:setup "jedi" nil t)
       (add-hook 'python-mode-hook 'jedi:setup)
       (require 'auto-complete)
-      (add-hook 'python-mode-hook 'auto-complete-mode)))
+      (add-hook 'python-mode-hook 'auto-complete-GENERAL)))
+
+;; ag helper
+(if (executable-find "ag") ; Require only if executable exists
+    (progn
+      (load "~/drewmacs/ag.el")
+      (require 'ag)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; GENERAL CONFIGURATION
+;;; mode CONFIGURATION
 
 ;; No Toolbar
 (if window-system (tool-bar-mode -1))
