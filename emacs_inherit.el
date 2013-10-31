@@ -56,16 +56,20 @@
 (require 'auto-complete-config)
 (ac-config-default)
 
-;; Python hooks
-(defvar ac-source-python
-  '((candidates .
-                (lambda ()
-                  (mapcar '(lambda (completion)
-                             (first (last (split-string completion "\\." t))))
-                          (python-symbol-completions (python-partial-symbol)))))))
+(if (and (boundp 'emacs-major-version)
+	 (>= emacs-major-version 24))
+    (progn
+      ;; EPC (prereq for jedi)
+      (add-to-list 'load-path (expand-file-name "~/drewmacs/epc-deps"))
+      (load "~/drewmacs/epc.el")
 
-(add-hook 'python-mode-hook
-          (lambda () (setq ac-sources '(ac-source-python))))
+      ;; Jedi
+      (load "~/drewmacs/jedi.el")
+      (setq jedi:setup-keys t)
+      (autoload 'jedi:setup "jedi" nil t)
+      (add-hook 'python-mode-hook 'jedi:setup)
+      (require 'auto-complete)
+      (add-hook 'python-mode-hook 'auto-complete-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GENERAL CONFIGURATION
