@@ -66,6 +66,12 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
 
 (set-exec-path-from-shell-PATH)
 
+;; Add local vars mode hook
+(defun run-local-vars-mode-hook ()
+  "Run a hook for the major mode after the local variables have been processed."
+  (run-hooks (intern (concat (symbol-name major-mode) "-local-vars-hook"))))
+(add-hook 'hack-local-variables-hook 'run-local-vars-mode-hook)
+
 ;; Auto complete mode
 (add-to-list 'load-path "~/drewmacs/auto-complete")
 (require 'auto-complete-config)
@@ -107,21 +113,21 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
     ;; directory having an __init__.py file
     (while (and (>= search-depth 0) (not found-init-py))
         (if (exists-at-current-depth "__init__.py")
-            (progn 
+            (progn
               ;; if it's not the root, then go back a directory
               (if (not (eq search-depth root-depth))
                   (setq search-depth (+ search-depth 1)))
               (setq found-init-py t))
           (setq search-depth (- search-depth 1))))
-    (list root-depth search-depth (path-at-depth base-directory search-depth))
+    ;; return the full absolute path at the search depth
+    (path-at-depth base-directory search-depth)
     )
   )
 
-(defun my-jedi-server-setup ()
-  (let ((args '("--sys-path" (guess-best-python-root-for-buffer (current-buffer)))))
-    (set (make-local-variable 'jedi:server-command) (list "python" jedi:server-script)))
-    (when (args) (set (make-local-variable 'jedi:server-args) args)))
-
+(defun setup-jedi-extra-args ()
+  (let ((project-base (guess-best-python-root-for-buffer (current-buffer))))
+    (make-local-variable 'jedi:server-args)
+    (when project-base (set 'jedi:server-args (list "--sys-path" project-base)))))
 
 ;; Only activate in Emacs 24 and up
 (if (and (boundp 'emacs-major-version)
@@ -134,9 +140,10 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
       ;; Jedi
       (setq jedi:setup-keys t)
       (load "~/drewmacs/jedi.el")
-      (autoload 'jedi:setup "jedi" nil t)
+      ;; (autoload 'jedi:setup "jedi" nil t)
       (add-to-list 'ac-sources 'ac-source-jedi-direct)
-      (add-hook 'python-mode-hook ''my-jedi-server-setup)))
+      (add-hook 'python-mode-local-vars-hook 'setup-jedi-extra-args)
+      (add-hook 'python-mode-local-vars-hook 'jedi:setup)))
 
 ;; ag helper
 (if (executable-find "ag") ; Require only if executable exists
