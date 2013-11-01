@@ -37,7 +37,7 @@
 (load "~/drewmacs/psvn.el")
 
 ;; Javascript
-(add-to-list 'load-path (expand-file-name "~/emacs"))
+(add-to-list 'load-path (expand-file-name "~/drewmacs"))
 (autoload 'js2-mode "js2" nil t)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 
@@ -139,8 +139,8 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
 
       ;; Jedi
       (setq jedi:setup-keys t)
+      (setq jedi:complete-on-dot t)
       (load "~/drewmacs/jedi.el")
-      ;; (autoload 'jedi:setup "jedi" nil t)
       (add-to-list 'ac-sources 'ac-source-jedi-direct)
       (add-hook 'python-mode-local-vars-hook 'setup-jedi-extra-args)
       (add-hook 'python-mode-local-vars-hook 'jedi:setup)))
