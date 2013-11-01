@@ -80,12 +80,11 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
       (load "~/drewmacs/epc.el")
 
       ;; Jedi
-      (load "~/drewmacs/jedi.el")
       (setq jedi:setup-keys t)
+      (load "~/drewmacs/jedi.el")
+      (setq jedi:server-command (list "python" jedi:server-script))
       (autoload 'jedi:setup "jedi" nil t)
-      (add-hook 'python-mode-hook 'jedi:setup)
-      (require 'auto-complete)
-      (add-hook 'python-mode-hook 'auto-complete-GENERAL)))
+      (add-hook 'python-mode-hook 'jedi:setup)))
 
 ;; ag helper
 (if (executable-find "ag") ; Require only if executable exists
