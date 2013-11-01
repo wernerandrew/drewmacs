@@ -71,7 +71,59 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
 (require 'auto-complete-config)
 (ac-config-default)
 
-;; Jedi Python Mode (Emacs 24 and up)
+;; Jedi Python Mode
+
+;; Experimental (but functional)
+;; a good candidate for tweaking
+(defun guess-best-python-root-for-buffer (buf)
+  "Guesses that the python root is the less 'deep' of either:
+     -- the root directory of the repository, or
+     -- the directory before the first directory after the root
+        having an __init__.py file."
+  (interactive)
+  (let ((found-project-root nil)
+        (found-init-py nil)
+        (search-depth 0)
+        (root-depth nil)
+        (max-search-depth 0)
+        (base-directory (file-name-directory (buffer-file-name buf))))
+    (setq max-search-depth (length (split-string base-directory "/")))
+
+    (defun path-at-depth (base depth-val)
+      (if (> depth-val 0)
+          (concat (path-at-depth base (- depth-val 1)) "../")
+        base))
+
+    (defun exists-at-current-depth (fname)
+      (file-exists-p (concat (path-at-depth base-directory search-depth) fname)))
+
+    ;; head down to the root of the git repo
+    (while (and (< search-depth max-search-depth) (not found-project-root))
+      (if (exists-at-current-depth ".git") ; add others?
+          (setq found-project-root t)
+        (setq search-depth (+ search-depth 1))))
+    (setq root-depth search-depth)
+    ;; heading back, pick the directory _before_ the first
+    ;; directory having an __init__.py file
+    (while (and (>= search-depth 0) (not found-init-py))
+        (if (exists-at-current-depth "__init__.py")
+            (progn 
+              ;; if it's not the root, then go back a directory
+              (if (not (eq search-depth root-depth))
+                  (setq search-depth (+ search-depth 1)))
+              (setq found-init-py t))
+          (setq search-depth (- search-depth 1))))
+    (list root-depth search-depth (path-at-depth base-directory search-depth))
+    )
+  )
+
+(defun my-jedi-server-setup ()
+  (let ((args '("--sys-path" (guess-best-python-root-for-buffer (current-buffer)))))
+    (set (make-local-variable 'jedi:server-command) (list "python" jedi:server-script)))
+    (when (args) (set (make-local-variable 'jedi:server-args) args)))
+
+
+;; Only activate in Emacs 24 and up
 (if (and (boundp 'emacs-major-version)
 	 (>= emacs-major-version 24))
     (progn
@@ -82,9 +134,9 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
       ;; Jedi
       (setq jedi:setup-keys t)
       (load "~/drewmacs/jedi.el")
-      (setq jedi:server-command (list "python" jedi:server-script))
       (autoload 'jedi:setup "jedi" nil t)
-      (add-hook 'python-mode-hook 'jedi:setup)))
+      (add-to-list 'ac-sources 'ac-source-jedi-direct)
+      (add-hook 'python-mode-hook ''my-jedi-server-setup)))
 
 ;; ag helper
 (if (executable-find "ag") ; Require only if executable exists
