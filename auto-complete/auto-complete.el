@@ -1691,6 +1691,8 @@ This workaround avoid flyspell processes when auto completion is being started."
         (princ " is ")
         (cond
          ((fboundp symbol)
+          ;; import help-xref-following
+          (require 'help-mode)
           (let ((help-xref-following t))
             (describe-function-1 symbol))
           (buffer-string))
