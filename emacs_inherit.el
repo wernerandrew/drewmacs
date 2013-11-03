@@ -51,6 +51,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; MISC
 
+;; Projectile - Emacs 24 only
+(if (and (boundp 'emacs-major-version)
+	 (>= emacs-major-version 24))
+    (progn
+      (add-to-list 'load-path "~/drewmacs/projectile")
+      (require 'projectile)
+      ;; Applies to all modes
+      (projectile-global-mode)))
+
 ;; Getting the executable path from the shell
 ;; Needed to find the ag executable
 (defun set-exec-path-from-shell-PATH ()
@@ -65,6 +74,15 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
     (setq exec-path (split-string path-from-shell path-separator))))
 
 (set-exec-path-from-shell-PATH)
+
+;; import ag, if possible
+(if (executable-find "ag") ; Require only if executable exists
+    (progn
+      (load "~/drewmacs/ag.el")
+      (require 'ag)
+      ;; same buffer for every search
+      (setq ag-reuse-buffers 't)))
+
 
 ;; Add local vars mode hook
 (defun run-local-vars-mode-hook ()
@@ -144,14 +162,6 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
       (add-to-list 'ac-sources 'ac-source-jedi-direct)
       (add-hook 'python-mode-local-vars-hook 'setup-jedi-extra-args)
       (add-hook 'python-mode-local-vars-hook 'jedi:setup)))
-
-;; ag helper
-(if (executable-find "ag") ; Require only if executable exists
-    (progn
-      (load "~/drewmacs/ag.el")
-      (require 'ag)
-      ;; same buffer for every search
-      (setq ag-reuse-buffers 't)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; mode CONFIGURATION
