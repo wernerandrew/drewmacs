@@ -58,7 +58,10 @@
       (add-to-list 'load-path "~/drewmacs/projectile")
       (require 'projectile)
       ;; Applies to all modes
-      (projectile-global-mode)))
+      (projectile-global-mode)
+      ;; Use grizzl for file i-search
+      (require 'grizzl)
+      (setq projectile-completion-system 'grizzl)))
 
 ;; Getting the executable path from the shell
 ;; Needed to find the ag executable
@@ -99,6 +102,7 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
 
 ;; Experimental (but functional)
 ;; a good candidate for tweaking
+;; TODO: rework to use vc-find-root, minimize dupe processes
 (defun guess-best-python-root-for-buffer (buf)
   "Guesses that the python root is the less 'deep' of either:
      -- the root directory of the repository, or
