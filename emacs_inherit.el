@@ -163,6 +163,9 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
       (setq jedi:setup-keys t)
       (setq jedi:complete-on-dot t)
       (load "~/drewmacs/jedi.el")
+      (setq jedi:server-command 
+            (list (executable-find "python")
+                  (cadr jedi:server-command)))
       (add-to-list 'ac-sources 'ac-source-jedi-direct)
       (add-hook 'python-mode-local-vars-hook 'setup-jedi-extra-args)
       (add-hook 'python-mode-local-vars-hook 'jedi:setup)))
@@ -276,12 +279,26 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
 ; Kill Copy/Paste lag
 (setq interprogram-cut-function nil)
 (setq interprogram-paste-function nil)
+(defun copy-from-os ()
+  (cond
+   ((eq system-type "darwin") (shell-command-to-string "pbpaste"))
+   (t nil)))
+
+(defun paste-to-os (text &optional push)
+  (cond
+   ((eq system-type "darwin")
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
+        (process-send-string proc text)
+        (process-send-eof proc))))
+   (t nil)))
+
 (global-set-key [(escape) (meta w)]
   (lambda ()
     (interactive)
     (eval-expression
       '(setq interprogram-cut-function
-             'x-select-text))
+             'paste-to-os))
     (kill-ring-save (region-beginning) (region-end))
     (eval-expression
       '(setq interprogram-cut-function nil))))
@@ -291,7 +308,7 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
     (interactive)
     (eval-expression
       '(setq interprogram-paste-function
-             'x-cut-buffer-or-selection-value))
+             'copy-from-os))
     (yank)
     (eval-expression
       '(setq interprogram-paste-function nil))))
