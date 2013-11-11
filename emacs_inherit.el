@@ -175,9 +175,9 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
       (setq jedi:setup-keys t)
       (setq jedi:complete-on-dot t)
       (load "~/drewmacs/jedi.el")
-      (setq jedi:server-command (list
-                                 (executable-find "python")
-                                 (cadr jedi:server-command)))
+      (setq jedi:server-command
+            (list (executable-find "python")
+                  (cadr jedi:server-command)))
       (add-to-list 'ac-sources 'ac-source-jedi-direct)
       (add-hook 'python-mode-local-vars-hook 'setup-jedi-extra-args)
       (add-hook 'python-mode-local-vars-hook 'jedi:setup)))
@@ -291,12 +291,26 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
 ; Kill Copy/Paste lag
 (setq interprogram-cut-function nil)
 (setq interprogram-paste-function nil)
+(defun copy-from-os ()
+  (cond
+   ((eq system-type "darwin") (shell-command-to-string "pbpaste"))
+   (t nil)))
+
+(defun paste-to-os (text &optional push)
+  (cond
+   ((eq system-type "darwin")
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
+        (process-send-string proc text)
+        (process-send-eof proc))))
+   (t nil)))
+
 (global-set-key [(escape) (meta w)]
   (lambda ()
     (interactive)
     (eval-expression
       '(setq interprogram-cut-function
-             'x-select-text))
+             'paste-to-os))
     (kill-ring-save (region-beginning) (region-end))
     (eval-expression
       '(setq interprogram-cut-function nil))))
@@ -306,7 +320,7 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
     (interactive)
     (eval-expression
       '(setq interprogram-paste-function
-             'x-cut-buffer-or-selection-value))
+             'copy-from-os))
     (yank)
     (eval-expression
       '(setq interprogram-paste-function nil))))
@@ -546,66 +560,6 @@ printer."
    "---------------------------- snip snip -------------------------------\n"
    "---------------------------- snip snip -------------------------------\n"
    ))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Insert a line showing all the variables written on the current line
-;; and separated by commas
-
-(defun ff/cout-var (arg)
-  "Invoked on a line with a list of variables names,
-it inserts a line which displays their values in cout
-(or cerr if the function is invoked with a universal arg)"
-  (interactive "P")
-  (let ((line (if arg "cerr" "cout")))
-    (goto-char (point-at-bol))
-    ;; Regexp syntax sucks moose balls, honnest. To match '[', just
-    ;; put it as the first char in the [...] ... This leads to some
-    ;; obvious things like the following
-    (while (re-search-forward "\\([][a-zA-Z0-9_.:\(\)]+\\)" (point-at-eol) t)
-      (setq line
-            (concat line " << \" "
-                    (match-string 1) " = \" << " (match-string 1))))
-    (goto-char (point-at-bol))
-    (kill-line)
-    (insert line " << endl\;\n")
-    (indent-region (point-at-bol 0) (point-at-eol 0) nil)
-    ))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun ff/clean-article ()
-  "Cleans up an article by removing the leading blanks on each line
-and refilling all the paragraphs."
-  (interactive)
-(let ((fill-column 92))
-  (goto-char (point-min))
-  (while (re-search-forward "^\\ +" nil t)
-    (replace-match "" nil nil))
-  (fill-individual-paragraphs (point-min) (point-max) t)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun ff/count-words-region (beginning end)
-  "Print number of words in the region.
-Words are defined as at least one word-constituent character
-followed by at least one character that is not a
-word-constituent.  The buffer's syntax table determines which
-characters these are."
-
-  (interactive "r")
-  (message "Counting words in region ... ")
-  (save-excursion
-    (goto-char beginning)
-    (let ((count 0))
-      (while (< (point) end)
-        (re-search-forward "\\w+\\W+")
-        (setq count (1+ count)))
-      (cond ((zerop count) (message "The region does NOT have any word."))
-            ((= 1 count) (message "The region has 1 word."))
-            (t (message "The region has %d words." count))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Keymaping
