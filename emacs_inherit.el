@@ -1,8 +1,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; .emacs file
 ;; Benjamin Gleitzman (gleitz@hunch.com)
-;; with some (limited) modifications by Drew Werner (drew@datadoghq.com)
-;; rev:
+;; with some modifications by Drew Werner (drew@datadoghq.com)
+;; rev: 11 Nov 2013
 ;; use with (load "~/drewmacs/emacs_inherit.el")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -51,6 +51,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; MISC
 
+;; Display ido results vertically, rather than horizontally
+(setq ido-decorations
+      (quote ("\n-> " "" "\n   " "\n   ..." "[" "]" " [No match]"
+              " [Matched]" " [Not readable]" " [Too big]" " [Confirm]")))
+
+(defun ido-disable-line-truncation () (set (make-local-variable 'truncate-lines) nil))
+(add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
+(defun ido-define-keys () ;; C-n/p is more intuitive in vertical layout
+  (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
+  (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
+(add-hook 'ido-setup-hook 'ido-define-keys)
+
 ;; Projectile - Emacs 24 only
 (if (and (boundp 'emacs-major-version)
 	 (>= emacs-major-version 24))
@@ -59,9 +71,8 @@
       (require 'projectile)
       ;; Applies to all modes
       (projectile-global-mode)
-      ;; Use grizzl for file i-search
-      (require 'grizzl)
-      (setq projectile-completion-system 'grizzl)))
+      ;; Use ido for search
+      (setq projectile-completion-system 'ido)))
 
 ;; Getting the executable path from the shell
 ;; Needed to find the ag executable
@@ -84,7 +95,8 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
       (load "~/drewmacs/ag.el")
       (require 'ag)
       ;; same buffer for every search
-      (setq ag-reuse-buffers 't)))
+      (setq ag-reuse-buffers t)
+      (setq ag-reuse-window t)))
 
 
 ;; Add local vars mode hook
@@ -163,6 +175,9 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
       (setq jedi:setup-keys t)
       (setq jedi:complete-on-dot t)
       (load "~/drewmacs/jedi.el")
+      (setq jedi:server-command (list
+                                 (executable-find "python")
+                                 (cadr jedi:server-command)))
       (add-to-list 'ac-sources 'ac-source-jedi-direct)
       (add-hook 'python-mode-local-vars-hook 'setup-jedi-extra-args)
       (add-hook 'python-mode-local-vars-hook 'jedi:setup)))
