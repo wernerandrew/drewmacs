@@ -51,6 +51,89 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; MISC
 
+;; Change compilation mode so it displays results in same buffer
+;; A bit of a hack but eh.
+;; (eval-after-load "compile"
+;; '(defun compilation-goto-locus (msg mk end-mk)
+;;   "Jump to an error corresponding to MSG at MK.
+;; All arguments are markers.  If END-MK is non-nil, mark is set there
+;; and overlay is highlighted between MK and END-MK."
+;;   ;; Show compilation buffer in other window, scrolled to this error.
+;;   (let* ((from-compilation-buffer (eq (window-buffer (selected-window))
+;;                   (marker-buffer msg)))
+;;      ;; Use an existing window if it is in a visible frame.
+;;      (pre-existing (get-buffer-window (marker-buffer msg) 0))
+;;      (w (if (and from-compilation-buffer pre-existing)
+;;         ;; Calling display-buffer here may end up (partly) hiding
+;;         ;; the error location if the two buffers are in two
+;;         ;; different frames.  So don't do it if it's not necessary.
+;;         pre-existing
+;;       (let ((display-buffer-reuse-frames t)
+;;         (pop-up-windows t))
+;;         ;; Pop up a window.
+;;         (display-buffer (marker-buffer msg)))))
+;;      (highlight-regexp (with-current-buffer (marker-buffer msg)
+;;              ;; also do this while we change buffer
+;;              (compilation-set-window w msg)
+;;              compilation-highlight-regexp)))
+;;     ;; Ideally, the window-size should be passed to `display-buffer' (via
+;;     ;; something like special-display-buffer) so it's only used when
+;;     ;; creating a new window.
+;;     (unless pre-existing (compilation-set-window-height w))
+
+;;     (switch-to-buffer (marker-buffer mk))
+;;     (unless (eq (goto-char mk) (point))
+;;       (widen)
+;;       (goto-char mk))
+;;     (if end-mk
+;;         (push-mark end-mk t)
+;;       (if mark-active (setq mark-active)))
+;;     ;; If hideshow got in the way of
+;;     ;; seeing the right place, open permanently.
+;;     (dolist (ov (overlays-at (point)))
+;;       (when (eq 'hs (overlay-get ov 'invisible))
+;;         (delete-overlay ov)
+;;         (goto-char mk)))
+
+;;     (when highlight-regexp
+;;       (if (timerp next-error-highlight-timer)
+;;           (cancel-timer next-error-highlight-timer))
+;;       (unless compilation-highlight-overlay
+;;         (setq compilation-highlight-overlay
+;;               (make-overlay (point-min) (point-min)))
+;;         (overlay-put compilation-highlight-overlay 'face 'next-error))
+;;       (with-current-buffer (marker-buffer mk)
+;;         (save-excursion
+;;           (if end-mk (goto-char end-mk) (end-of-line))
+;;           (let ((end (point)))
+;;             (if mk (goto-char mk) (beginning-of-line))
+;;             (if (and (stringp highlight-regexp)
+;;                      (re-search-forward highlight-regexp end t))
+;;                 (progn
+;;                   (goto-char (match-beginning 0))
+;;                   (move-overlay compilation-highlight-overlay
+;;                                 (match-beginning 0) (match-end 0)
+;;                                 (current-buffer)))
+;;               (move-overlay compilation-highlight-overlay
+;;                             (point) end (current-buffer)))
+;;             (if (or (eq next-error-highlight t)
+;;                     (numberp next-error-highlight))
+;;                 ;; We want highlighting: delete overlay on next input.
+;;                 (add-hook 'pre-command-hook
+;;                           'compilation-goto-locus-delete-o)
+;;               ;; We don't want highlighting: delete overlay now.
+;;       (delete-overlay compilation-highlight-overlay))
+;;             ;; We want highlighting for a limited time:
+;;             ;; set up a timer to delete it.
+;;             (when (numberp next-error-highlight)
+;;               (setq next-error-highlight-timer
+;;                     (run-at-time next-error-highlight nil
+;;                                  'compilation-goto-locus-delete-o)))))))
+;;     (when (and (eq next-error-highlight 'fringe-arrow))
+;;       ;; We want a fringe arrow (instead of highlighting).
+;;       (setq next-error-overlay-arrow-position
+;;             (copy-marker (line-beginning-position)))))))
+
 ;; Display ido results vertically, rather than horizontally
 (setq ido-decorations
       (quote ("\n-> " "" "\n   " "\n   ..." "[" "]" " [No match]"
@@ -96,7 +179,7 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
       (require 'ag)
       ;; same buffer for every search
       (setq ag-reuse-buffers t)
-      (setq ag-reuse-window t)))
+      (setq ag-results-pane nil))) ;; disable for now
 
 
 ;; Add local vars mode hook
@@ -580,6 +663,16 @@ printer."
 (global-set-key (kbd "M-}") 'select-next-window)
 (global-set-key (kbd "M-{") 'select-previous-window)
 
+;; Map i-j-k-l to arrow navigation
+;; In addition to usual C-p, C-n stuff
+
+(global-set-key (kbd "M-l") 'forward-char)
+(global-set-key (kbd "M-j") 'backward-char)
+(global-set-key (kbd "M-k") 'next-line)
+(global-set-key (kbd "M-i") 'previous-line)
+(global-set-key (kbd "M-K") 'end-of-defun)
+(global-set-key (kbd "M-I") 'beginning-of-defun)
+
 (require 'info nil t)
 
 ;; shift-tab going backward is kind of standard
@@ -700,7 +793,7 @@ current paragraph into a single long line."
 
 ;; Tabs are bad, mmkay?
 (setq-default indent-tabs-mode nil)
-(setq ruby-indent-level 8)
+(setq ruby-indent-level 2)
 (add-hook 'html-mode-hook
         (lambda ()
           ;; Default indentation is usually 2 spaces, changing to 4.

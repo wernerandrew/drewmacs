@@ -59,6 +59,12 @@ hiding the results buffer."
   :type 'boolean
   :group 'ag)
 
+(defcustom ag-results-pane nil
+  "Non-nil means we track the window being used for showing
+results, and keep showing those results in the same window."
+  :type 'boolean
+  :group 'ag)
+
 (defcustom ag-project-root-function nil
   "A function to determine the project root for `ag-project'.
 
@@ -72,6 +78,10 @@ If set to nil, fall back to finding VCS root directories."
   :group 'ag)
 
 (require 'compile)
+
+(defvar ag-source-buffer nil
+  "A function to save the buffer that displays the source
+being viewed.")
 
 ;; Although ag results aren't exactly errors, we treat them as errors
 ;; so `next-error' and `previous-error' work. However, we ensure our
@@ -88,13 +98,59 @@ If set to nil, fall back to finding VCS root directories."
 (defun ag/next-error-function (n &optional reset)
   "Open the search result at point in the current window or a
 different window, according to `ag-open-in-other-window'."
-  (if ag-reuse-window
-      ;; prevent changing the window
-      (flet ((pop-to-buffer (buffer &rest args)
-                            (switch-to-buffer buffer)))
-        (compilation-next-error-function n reset))
-    ;; just navigate to the results as normal
-    (compilation-next-error-function n reset)))
+  (cond (ag-results-pane
+         ;; work in progress
+         (let ((ag-buffer (current-buffer)))
+           (flet ((pop-to-buffer
+                   (buffer &rest args)
+                   (if (buffer-live-p ag-source-buffer)
+                       (with-current-buffer ag-source-buffer
+                         (switch-to-buffer buffer)
+                         (setq ag-source-buffer (current-buffer)))
+                     (setq ag-source-buffer
+                           (window-buffer (display-buffer buffer))))))
+             (compilation-next-error-function n reset))
+           (switch-to-buffer ag-buffer)))
+         (ag-reuse-window
+         ;; prevent changing the window
+         (flet ((pop-to-buffer (buffer &rest args)
+                               (switch-to-buffer buffer)))
+           (compilation-next-error-function n reset)))
+         ;; just navigate to the results as normal
+         (t (compilation-next-error-function n reset))))
+
+(defun ag/get-results-window ()
+  "Helper to find the results window in which we need to
+display results.  If none is defined, tries to create or
+find the best match."
+  (or (compilation-buffer-p (current-buffer))
+      (error "Must call this from the ag buffer."))
+  (if (window-live-p ag/source-window)
+      ag/source-window
+    ;; TODO: make this configurable
+    (let* ((current-window (get-buffer-window (current-buffer)))
+           (min-split-height (max (* 2 window-min-height) 20))
+           (min-split-width (max (* 2 window-min-width) 160))
+           (prefer-split-height (max min-split-height 40))
+           (prefer-split-width (max min-split-width 200))
+           ;; Values for current window
+           (w (window-body-width current-window))
+           (h (window-body-height current-window)))
+      ;; We choose the order heuristically
+      ;; Prefer splitting to an existing window
+      ;; Prefer splitting vertically to horizontally
+      ;; Default is next window in cyclic ordering.
+      (cond ((> h prefer-split-height)
+             (split-window current-window nil 'below))
+            ((> w prefer-split-width)
+             (split-window current-window nil 'right))
+            ((> h min-split-height)
+             (split-window current-window nil 'below))
+            ((> w min-split-width)
+             (split-window current-window nil 'right))
+            (t (next-window))))))
+
+
 
 (define-compilation-mode ag-mode "Ag"
   "Ag results compilation mode"
@@ -131,6 +187,7 @@ If REGEXP is non-nil, treat STRING as a regular expression."
       (setq arguments (append '("--nocolor") arguments)))
     (unless (file-exists-p default-directory)
       (error "No such directory %s" default-directory))
+    (if ag-results-pane (setq ag-source-buffer nil))
     (compilation-start
      (mapconcat 'shell-quote-argument
                 (append '("ag") arguments (list string))
