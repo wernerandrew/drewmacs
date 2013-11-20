@@ -143,7 +143,10 @@
 (add-hook 'ido-minibuffer-setup-hook 'ido-disable-line-truncation)
 (defun ido-define-keys () ;; C-n/p is more intuitive in vertical layout
   (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
-  (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
+  (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)
+  ;; and include our custom ones also
+  (define-key ido-completion-map (kbd "M-k") 'ido-next-match)
+  (define-key ido-completion-map (kbd "M-i") 'ido-prev-match))
 (add-hook 'ido-setup-hook 'ido-define-keys)
 
 ;; Projectile - Emacs 24 only
@@ -663,7 +666,7 @@ printer."
 (global-set-key (kbd "M-}") 'select-next-window)
 (global-set-key (kbd "M-{") 'select-previous-window)
 
-;; Map i-j-k-l to arrow navigation
+;; Map navigation shortcuts to i-j-k-l keys
 ;; In addition to usual C-p, C-n stuff
 
 (global-set-key (kbd "M-l") 'forward-char)
@@ -672,6 +675,11 @@ printer."
 (global-set-key (kbd "M-i") 'previous-line)
 (global-set-key (kbd "M-K") 'end-of-defun)
 (global-set-key (kbd "M-I") 'beginning-of-defun)
+(global-set-key (kbd "M-J") 'beginning-of-line)
+(global-set-key (kbd "M-L") 'end-of-line)
+(global-set-key (kbd "C-M-i") 'scroll-up-command)
+(global-set-key (kbd "C-M-k") 'scroll-down-command)
+
 
 (require 'info nil t)
 
