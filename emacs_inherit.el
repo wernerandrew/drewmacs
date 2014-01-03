@@ -47,6 +47,7 @@
 ;; Ruby (blech)
 (load "~/drewmacs/ruby-mode/ruby-mode.el")
 (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
+(add-to-list 'auto-mode-alist '("Rakefile$" . ruby-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; MISC
@@ -253,7 +254,6 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
 
 ; copy and paste from X
 (setq x-select-enable-clipboard t)
-;(setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
 
 ;; Use colorization for all modes
 (global-font-lock-mode t)
@@ -333,47 +333,6 @@ This is particularly useful under Mac OSX, where GUI apps are not started from a
                                                 (text-mode)
                                                 (auto-fill-mode)
                                                 (flyspell-mode))))
-
-; Kill Copy/Paste lag
-(setq interprogram-cut-function nil)
-(setq interprogram-paste-function nil)
-(defun copy-from-os ()
-  (cond
-   ((eq system-type "darwin") (shell-command-to-string "pbpaste"))
-   (t nil)))
-
-(defun paste-to-os (text &optional push)
-  (cond
-   ((eq system-type "darwin")
-    (let ((process-connection-type nil))
-      (let ((proc (start-process "pbcopy" "*Messages*" "pbcopy")))
-        (process-send-string proc text)
-        (process-send-eof proc))))
-   (t nil)))
-
-(global-set-key [(escape) (meta w)]
-  (lambda ()
-    (interactive)
-    (eval-expression
-      '(setq interprogram-cut-function
-             'paste-to-os))
-    (kill-ring-save (region-beginning) (region-end))
-    (eval-expression
-      '(setq interprogram-cut-function nil))))
-
-(global-set-key [(escape) (control y)]
-  (lambda ()
-    (interactive)
-    (eval-expression
-      '(setq interprogram-paste-function
-             'copy-from-os))
-    (yank)
-    (eval-expression
-      '(setq interprogram-paste-function nil))))
-
-; Desktop load
-;; (desktop-load-default)
-;; (desktop-read)
 
 ; Hippie-expand
 (setq hippie-expand-try-functions-list '(try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-complete-lisp-symbol-partially try-complete-lisp-symbol))
@@ -722,6 +681,9 @@ printer."
 
 (define-key global-map [(control c) (control l)] 'goto-line)
 
+;; transpose-words is evil - set instead to replace-regexp
+(global-set-key (kbd "M-t") 'replace-regexp)
+
 ;; Allow printing to PDF
 (defun print-to-pdf ()
   (interactive)
@@ -762,10 +724,6 @@ current paragraph into a single long line."
 ;; Tabs are bad, mmkay?
 (setq-default indent-tabs-mode nil)
 (setq ruby-indent-level 2)
-(add-hook 'html-mode-hook
-        (lambda ()
-          ;; Default indentation is usually 2 spaces, changing to 4.
-          (set (make-local-variable 'sgml-basic-offset) 4)))
 (autoload 'espresso-mode "espresso")
 (defun my-js2-indent-function ()
   (interactive)
