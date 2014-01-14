@@ -49,6 +49,11 @@
 (add-to-list 'auto-mode-alist '("\\.rb$" . ruby-mode))
 (add-to-list 'auto-mode-alist '("Rakefile$" . ruby-mode))
 
+;; Haskell
+(add-to-list 'load-path "~/drewmacs/haskell-mode")
+(require 'haskell-mode-autoloads)
+(add-to-list 'Info-default-directory-list "~/drewmacs/haskell-mode")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; MISC
 
