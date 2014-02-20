@@ -40,6 +40,11 @@
 (add-to-list 'load-path (expand-file-name "~/drewmacs"))
 (autoload 'js2-mode "js2" nil t)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+;; Some preferred behaviors
+(setq
+ js2-cleanup-whitespace t ;; yeah, because why not
+ js2-mirror-mode nil)     ;; DON'T MATCH PARENS I HATE IT
+
 
 ;; Cython
 (load "~/drewmacs/cython-mode.el")
@@ -810,20 +815,6 @@ current paragraph into a single long line."
 (define-key global-map [?\C-x left] 'ff/prev-buffer)
 (define-key global-map [(control z)] nil)
 
-;; OLD STUFF - mostly for web
+;; Stop jumping into a python process
 
-;; For mako: using nxml / nxhtml
-
-;; nxhtml + mako
-
-;; MEH: needs some work.  Maybe I should start looking at web-mode again...
-;; (load "~/drewmacs/nxhtml/autostart.el")
-;; (setq mumamo-background-colors nil)
-;; (setq debug-on-error nil) ;; disable auto debugging
-;; (add-to-list 'auto-mode-alist '("\\.mak$" . mako-nxhtml-mumamo-mode))
-;; (add-to-list 'auto-mode-alist '("\\.mako$" . mako-nxhtml-mumamo-mode))
-
-;; Django Stuffs
-;; (load "~/drewmacs/django-html-mode.el")
-;; (autoload 'django-html-mode "django-html-mode")
-;; (add-to-list 'auto-mode-alist
+(global-unset-key (kbd "C-c C-p"))
