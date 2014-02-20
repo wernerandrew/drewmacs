@@ -40,6 +40,11 @@
 (add-to-list 'load-path (expand-file-name "~/drewmacs"))
 (autoload 'js2-mode "js2" nil t)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+;; Some preferred behaviors
+(setq
+ js2-cleanup-whitespace t ;; yeah, because why not
+ js2-mirror-mode nil)     ;; DON'T MATCH PARENS I HATE IT
+
 
 ;; Cython
 (load "~/drewmacs/cython-mode.el")
@@ -803,3 +808,7 @@ current paragraph into a single long line."
 (define-key global-map [?\C-x right] 'ff/next-buffer)
 (define-key global-map [?\C-x left] 'ff/prev-buffer)
 (define-key global-map [(control z)] nil)
+
+;; Stop jumping into a python process
+
+(global-unset-key (kbd "C-c C-p"))
