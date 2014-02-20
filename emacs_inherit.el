@@ -53,6 +53,7 @@
 (add-to-list 'load-path "~/drewmacs/haskell-mode")
 (require 'haskell-mode-autoloads)
 (add-to-list 'Info-default-directory-list "~/drewmacs/haskell-mode")
+(add-hook 'haskell-mode-hook (lambda () (haskell-indent-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; MISC
@@ -763,8 +764,7 @@ current paragraph into a single long line."
 (defun my-js2-mode-hook ()
   (require 'espresso)
   (setq espresso-indent-level 4
-        indent-tabs-mode nil
-        c-basic-offset 4)
+        indent-tabs-mode nil)
   (c-toggle-auto-state 0)
   (c-toggle-hungry-state 1)
   (set (make-local-variable 'indent-line-function) 'my-js2-indent-function)
@@ -788,18 +788,7 @@ current paragraph into a single long line."
 
 (define-key global-map [(meta q)] 'th-unfill-paragraph)
 
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(c-basic-offset 8))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- )
+(setq c-basic-offset 4)
 
 ; Key remapping
 (define-key global-map [(meta r)] 'replace-string)
@@ -814,21 +803,3 @@ current paragraph into a single long line."
 (define-key global-map [?\C-x right] 'ff/next-buffer)
 (define-key global-map [?\C-x left] 'ff/prev-buffer)
 (define-key global-map [(control z)] nil)
-
-;; OLD STUFF - mostly for web
-
-;; For mako: using nxml / nxhtml
-
-;; nxhtml + mako
-
-;; MEH: needs some work.  Maybe I should start looking at web-mode again...
-;; (load "~/drewmacs/nxhtml/autostart.el")
-;; (setq mumamo-background-colors nil)
-;; (setq debug-on-error nil) ;; disable auto debugging
-;; (add-to-list 'auto-mode-alist '("\\.mak$" . mako-nxhtml-mumamo-mode))
-;; (add-to-list 'auto-mode-alist '("\\.mako$" . mako-nxhtml-mumamo-mode))
-
-;; Django Stuffs
-;; (load "~/drewmacs/django-html-mode.el")
-;; (autoload 'django-html-mode "django-html-mode")
-;; (add-to-list 'auto-mode-alist
